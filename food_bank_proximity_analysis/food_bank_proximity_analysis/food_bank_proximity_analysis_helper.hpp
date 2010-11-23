@@ -1,3 +1,4 @@
+#include <mpi.h>
 #ifndef GUARD_food_bank_proximity_analysis_helper_hpp20101121_
 #define GUARD_food_bank_proximity_analysis_helper_hpp20101121_
 
@@ -33,12 +34,16 @@ the program(s) have been supplied.
 =============================================================*/
 
 // Struct to hold variables
-struct coordinates 
-{
-	long x_;
-	long y_;
+struct coordinate {
+	long double x_;
+	long double y_;
 };
 
-// Take in vectors of coordinates 
+// Take in vectors of coordinates
+long double calcDis(coordinate home, coordinate foodBank) {
+	long double dis = 0;
+	dis = pow(home.x_ - foodBank.x_, home.y_ - foodBank.y_);
+	return dis;
+}
 
 #endif // GUARD_food_bank_proximity_analysis_helper_hpp20101121_
