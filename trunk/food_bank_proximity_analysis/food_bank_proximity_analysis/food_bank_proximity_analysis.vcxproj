@@ -79,6 +79,10 @@
   <ItemGroup>
     <ClInclude Include="food_bank_proximity_analysis_helper.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="FoodBanks.dat" />
+    <None Include="Residences.dat" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
