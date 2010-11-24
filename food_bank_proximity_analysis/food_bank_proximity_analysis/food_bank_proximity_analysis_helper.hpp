@@ -41,9 +41,8 @@ struct coordinate {
 
 // Take in vectors of coordinates
 long double calcDis(coordinate home, coordinate foodBank) {
-	long double dis = 0;
-	dis = pow(home.x_ - foodBank.x_, home.y_ - foodBank.y_);
-	return dis;
+	//double dis = (sqrt(pow(home.x_ - foodBank.x_, 2) + pow(home.y_ - foodBank.y_, 2))/1000);
+	return (sqrt(pow(home.x_ - foodBank.x_, 2) + pow(home.y_ - foodBank.y_, 2))/1000);
 }
 
 #endif // GUARD_food_bank_proximity_analysis_helper_hpp20101121_
