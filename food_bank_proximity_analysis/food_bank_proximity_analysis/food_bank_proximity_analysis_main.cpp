@@ -65,6 +65,10 @@ void processMaster(int rank, int numProcs) {
 
 		foodBanks.push_back(coords);
 	}
+	inHomes.close();
+	inFoodBanks.close();
+
+	//calcDis(homes[0], foodBanks[0]);
 
 	// Get the shortest distance to a food bank for each home
 	for(int i = 0; i < homes.size(); i++) {
@@ -76,6 +80,7 @@ void processMaster(int rank, int numProcs) {
 			if(dis < shortestDis)
 				shortestDis = dis;
 		}
+
 
 		if(shortestDis <= 1)
 			countDis1++;
@@ -100,6 +105,9 @@ void processMaster(int rank, int numProcs) {
 	cout << "  > 5" << setw(40) << right << countDis4 << setw(28) << right << (countDis4/countAddr)*100 << endl;
 }
 
+void processSlave(int rank, int numProcs) {
+
+}
 int main( int argc, char* argv[] ) {
 	if(MPI_Init(&argc, &argv) == MPI_SUCCESS) {
 		// Get the number of processes
@@ -110,8 +118,8 @@ int main( int argc, char* argv[] ) {
 		int rank;
 		MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-		processMaster(rank, numProcs);
-		/*try {
+		//processMaster(rank, numProcs);
+		try {
 			if( rank == 0 )
 				processMaster(rank, numProcs);
 			else
@@ -119,7 +127,7 @@ int main( int argc, char* argv[] ) {
 		}
 		catch(exception ex) {
 			cerr << ex.what() << endl;
-		}*/
+		}
 		
 		MPI_Finalize();
 	}

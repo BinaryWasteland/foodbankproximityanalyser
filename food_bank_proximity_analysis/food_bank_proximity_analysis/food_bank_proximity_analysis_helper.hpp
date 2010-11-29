@@ -3,7 +3,7 @@
 #define GUARD_food_bank_proximity_analysis_helper_hpp20101121_
 
 /** @file: food_bank_proximity_analysis_helper.hpp
-	@author Greg R. Jacobs
+@author Greg R. Jacobs
 	@author greg.r.jacobs@gmail.com
 	@author http://gregrjacobs.com
 	@date 2010-11-21
