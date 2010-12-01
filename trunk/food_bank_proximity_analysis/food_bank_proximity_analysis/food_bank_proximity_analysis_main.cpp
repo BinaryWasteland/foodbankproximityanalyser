@@ -10,6 +10,7 @@ using namespace std;
 
 // Global constants
 const int MSG_TAG_DATA = 0, MSG_TAG_DONE = 1;
+const int HOMES_BYTES = 11;
 ifstream inHomes("Residences.dat");
 ifstream inFoodBanks("FoodBanks.dat");
 vector<coordinate> foodBanks;
@@ -29,7 +30,24 @@ void processMaster(int rank, int numProcs)
 
 		double startTime = MPI_Wtime();
 
-		while(!inHomes.eof()) {
+		// Determine the number of SINs per process (not exact since the
+		// number of processes may not divide evenly into the number of SINs)
+		inHomes.seekg(0, ios::end); // move pointer to end of file
+		int fBytes = static_cast<int>(inHomes.tellg()); // get file size in bytes
+		int numHomesTotal = fBytes / HOMES_BYTES;
+		int homesPerProcess = numHomesTotal / numProcs;
+		
+		// Move the file pointer to the apropriate starting position
+		inHomes.seekg( rank * homesPerProcess * HOMES_BYTES, ios::beg);
+
+		// Determine the exact number of SINs to be validated by THIS process
+		int numHomesMine = homesPerProcess;
+		if( rank == numProcs - 1 )
+			// Add the unassigned SINs to the last slave's workload
+			numHomesMine += numHomesTotal % numProcs;
+
+		/* Obsolete for Parallel Computing
+			while(!inHomes.eof()) {
 			countAddr++;
 			string line;
 			string coord;
@@ -48,7 +66,7 @@ void processMaster(int rank, int numProcs)
 			homes.push_back(coords);
 		}
 
-		inHomes.close();
+		inHomes.close();*/
 		
 
 		// Get the shortest distance to a food bank for each home
@@ -94,7 +112,21 @@ void processMaster(int rank, int numProcs)
 void processSlave(int rank, int numProcs) 
 {
 	try {
+		// Determine the number of SINs per process (not exact since the
+		// number of processes may not divide evenly into the number of SINs)
+		inHomes.seekg(0, ios::end); // move pointer to end of file
+		int fBytes = static_cast<int>(inHomes.tellg()); // get file size in bytes
+		int numHomesTotal = fBytes / HOMES_BYTES;
+		int homesPerProcess = numHomesTotal / numProcs;
+		
+		// Move the file pointer to the apropriate starting position
+		inHomes.seekg( rank * homesPerProcess * HOMES_BYTES, ios::beg);
 
+		// Determine the exact number of SINs to be validated by THIS process
+		int numHomesMine = homesPerProcess;
+		if( rank == numProcs - 1 )
+			// Add the unassigned SINs to the last slave's workload
+			numHomesMine += numHomesTotal % numProcs;
 	} catch( exception ex ) {
 		cerr << ex.what() << endl;
 	}
