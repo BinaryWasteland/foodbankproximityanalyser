@@ -10,17 +10,15 @@ using namespace std;
 
 // Global constants
 const int MSG_TAG_DATA = 0, MSG_TAG_DONE = 1;
+vector<coordinate> _foodBanks;
 
-void processMaster(int rank, int numProcs) 
+void processMaster(int rank, int numProcs, char* fName) 
 {
 	try
 	{
 		vector<coordinate> homes;
-		vector<coordinate> foodBanks;
 		ifstream inHomes;
-		ifstream inFoodBanks;
 		inHomes.open("Residences.dat");
-		inFoodBanks.open("FoodBanks.dat");
 		double countAddr = 0;
 		double countDis1 = 0;
 		double countDis2 = 0;
@@ -50,26 +48,8 @@ void processMaster(int rank, int numProcs)
 
 			homes.push_back(coords);
 		}
-
-		while(!inFoodBanks.eof()) {
-			string line;
-			string coord;
-			coordinate coords;
-			int count = 0;
-			getline(inFoodBanks, line, '\n');
-			stringstream ss(line);
-			while(getline(ss, coord, ' ')) {
-				if(count == 0)
-					coords.x_ = atof(coord.c_str());
-				else
-					coords.y_ = atof(coord.c_str());
-				count++;
-			}
-
-			foodBanks.push_back(coords);
-		}
 		inHomes.close();
-		inFoodBanks.close();
+		
 
 		//calcDis(homes[0], foodBanks[0]);
 
@@ -127,6 +107,26 @@ void processSlave(int rank, int numProcs, char* fName)
 
 int main( int argc, char* argv[] ) 
 {
+	ifstream inFoodBanks;
+	inFoodBanks.open("FoodBanks.dat");
+	while(!inFoodBanks.eof()) {
+		string line;
+		string coord;
+		coordinate coords;
+		int count = 0;
+		getline(inFoodBanks, line, '\n');
+		stringstream ss(line);
+		while(getline(ss, coord, ' ')) {
+			if(count == 0)
+				coords.x_ = atof(coord.c_str());
+			else
+				coords.y_ = atof(coord.c_str());
+			count++;
+		}
+
+		_foodBanks.push_back(coords);
+	}
+	inFoodBanks.close();
 	if(MPI_Init(&argc, &argv) == MPI_SUCCESS) {
 		// Get the number of processes
 		int numProcs;
