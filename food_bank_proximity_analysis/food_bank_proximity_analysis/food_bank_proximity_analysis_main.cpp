@@ -11,104 +11,122 @@ using namespace std;
 // Global constants
 const int MSG_TAG_DATA = 0, MSG_TAG_DONE = 1;
 
-void processMaster(int rank, int numProcs) {
-	vector<coordinate> homes;
-	vector<coordinate> foodBanks;
-	ifstream inHomes;
-	ifstream inFoodBanks;
-	inHomes.open("Residences.dat");
-	inFoodBanks.open("FoodBanks.dat");
-	double countAddr = 0;
-	double countDis1 = 0;
-	double countDis2 = 0;
-	double countDis3 = 0;
-	double countDis4 = 0;
+void processMaster(int rank, int numProcs) 
+{
+	try
+	{
+		vector<coordinate> homes;
+		vector<coordinate> foodBanks;
+		ifstream inHomes;
+		ifstream inFoodBanks;
+		inHomes.open("Residences.dat");
+		inFoodBanks.open("FoodBanks.dat");
+		double countAddr = 0;
+		double countDis1 = 0;
+		double countDis2 = 0;
+		double countDis3 = 0;
+		double countDis4 = 0;
 
-	cout << "Proximity of Residential Addresses to Foodbanks in Toronto" << endl;
-	cout << "----------------------------------------------------------" << endl << endl;
+		cout << "Proximity of Residential Addresses to Foodbanks in Toronto" << endl;
+		cout << "----------------------------------------------------------" << endl << endl;
 
-	double startTime = MPI_Wtime();
+		double startTime = MPI_Wtime();
 
-	while(!inHomes.eof()) {
-		countAddr++;
-		string line;
-		string coord;
-		coordinate coords;
-		getline(inHomes, line, '\n');
-		stringstream ss(line);
-		int count = 0;
-		while(getline(ss, coord, ' ')) {
-			if(count == 0)
-				coords.x_ = atof(coord.c_str());
-			else
-				coords.y_ = atof(coord.c_str());
-			count++;
+		while(!inHomes.eof()) {
+			countAddr++;
+			string line;
+			string coord;
+			coordinate coords;
+			getline(inHomes, line, '\n');
+			stringstream ss(line);
+			int count = 0;
+			while(getline(ss, coord, ' ')) {
+				if(count == 0)
+					coords.x_ = atof(coord.c_str());
+				else
+					coords.y_ = atof(coord.c_str());
+				count++;
+			}
+
+			homes.push_back(coords);
 		}
 
-		homes.push_back(coords);
-	}
+		while(!inFoodBanks.eof()) {
+			string line;
+			string coord;
+			coordinate coords;
+			int count = 0;
+			getline(inFoodBanks, line, '\n');
+			stringstream ss(line);
+			while(getline(ss, coord, ' ')) {
+				if(count == 0)
+					coords.x_ = atof(coord.c_str());
+				else
+					coords.y_ = atof(coord.c_str());
+				count++;
+			}
 
-	while(!inFoodBanks.eof()) {
-		string line;
-		string coord;
-		coordinate coords;
-		int count = 0;
-		getline(inFoodBanks, line, '\n');
-		stringstream ss(line);
-		while(getline(ss, coord, ' ')) {
-			if(count == 0)
-				coords.x_ = atof(coord.c_str());
-			else
-				coords.y_ = atof(coord.c_str());
-			count++;
+			foodBanks.push_back(coords);
 		}
+		inHomes.close();
+		inFoodBanks.close();
 
-		foodBanks.push_back(coords);
-	}
-	inHomes.close();
-	inFoodBanks.close();
+		//calcDis(homes[0], foodBanks[0]);
 
-	//calcDis(homes[0], foodBanks[0]);
-
-	// Get the shortest distance to a food bank for each home
-	for(int i = 0; i < homes.size(); i++) {
-		double dis = 0;
-		double shortestDis = 1000;
-		for(int j = 0; j < foodBanks.size(); j++) {
-			dis = calcDis(homes[i], foodBanks[j]);
+		// Get the shortest distance to a food bank for each home
+		for(int i = 0; i < homes.size(); i++) {
+			double dis = 0;
+			double shortestDis = 1000;
+			for(int j = 0; j < foodBanks.size(); j++) {
+				dis = calcDis(homes[i], foodBanks[j]);
 			
-			if(dis < shortestDis)
-				shortestDis = dis;
+				if(dis < shortestDis)
+					shortestDis = dis;
+			}
+
+
+			if(shortestDis <= 1)
+				countDis1++;
+			else if(shortestDis <= 2)
+				countDis2++;
+			else if(shortestDis <= 5)
+				countDis3++;
+			else if(shortestDis > 5)
+				countDis4++;
 		}
 
+		startTime = MPI_Wtime() - startTime;
 
-		if(shortestDis <= 1)
-			countDis1++;
-		else if(shortestDis <= 2)
-			countDis2++;
-		else if(shortestDis <= 5)
-			countDis3++;
-		else if(shortestDis > 5)
-			countDis4++;
+		cout << "Number of Processes:\t\t" << numProcs << endl;
+		cout << "Elapsed Time:\t\t\t" << startTime << " seconds" << endl << endl;
+		cout << "Process #1 results for " << countAddr << " addresses..." << endl;
+		cout << "Nearest Foodbank(km)" << setw(28) << "# of Addresses" << setw(28) << "% of Addresses" << endl;
+		cout << "--------------------" << setw(28) << "--------------" << setw(28) << "--------------" << endl;
+		cout << "0 - 1" << setw(40) << right << countDis1 << setw(28) << right << (countDis1/countAddr)*100 << endl;
+		cout << "1 - 2" << setw(40) << right << countDis2 << setw(28) << right << (countDis2/countAddr)*100 << endl;
+		cout << "2 - 5" << setw(40) << right << countDis3 << setw(28) << right << (countDis3/countAddr)*100 << endl;
+		cout << "  > 5" << setw(40) << right << countDis4 << setw(28) << right << (countDis4/countAddr)*100 << endl;
 	}
-
-	startTime = MPI_Wtime() - startTime;
-
-	cout << "Number of Processes:\t\t" << numProcs << endl;
-	cout << "Elapsed Time:\t\t\t" << startTime << " seconds" << endl << endl;
-	cout << "Process #1 results for " << countAddr << " addresses..." << endl;
-	cout << "Nearest Foodbank(km)" << setw(28) << "# of Addresses" << setw(28) << "% of Addresses" << endl;
-	cout << "--------------------" << setw(28) << "--------------" << setw(28) << "--------------" << endl;
-	cout << "0 - 1" << setw(40) << right << countDis1 << setw(28) << right << (countDis1/countAddr)*100 << endl;
-	cout << "1 - 2" << setw(40) << right << countDis2 << setw(28) << right << (countDis2/countAddr)*100 << endl;
-	cout << "2 - 5" << setw(40) << right << countDis3 << setw(28) << right << (countDis3/countAddr)*100 << endl;
-	cout << "  > 5" << setw(40) << right << countDis4 << setw(28) << right << (countDis4/countAddr)*100 << endl;
+	catch( exception ex )
+	{
+		cerr << ex.what() << endl;
+	}
 }
 
-void processSlave(int rank, int numProcs) {
+void processSlave(int rank, int numProcs, char* fName) 
+{
+	try
+	{
 
+	}
+	catch( exception ex )
+	{
+		cerr << ex.what() << endl;
+	}
 }
-int main( int argc, char* argv[] ) {
+
+int main( int argc, char* argv[] ) 
+{
 	if(MPI_Init(&argc, &argv) == MPI_SUCCESS) {
 		// Get the number of processes
 		int numProcs;
