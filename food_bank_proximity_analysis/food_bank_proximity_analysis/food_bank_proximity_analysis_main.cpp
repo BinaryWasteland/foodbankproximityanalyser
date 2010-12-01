@@ -10,15 +10,14 @@ using namespace std;
 
 // Global constants
 const int MSG_TAG_DATA = 0, MSG_TAG_DONE = 1;
-vector<coordinate> _foodBanks;
+ifstream inHomes("Residences.dat");
+ifstream inFoodBanks("FoodBanks.dat");
+vector<coordinate> foodBanks;
 
-void processMaster(int rank, int numProcs, char* fName) 
+void processMaster(int rank, int numProcs) 
 {
-	try
-	{
+	try	{
 		vector<coordinate> homes;
-		ifstream inHomes;
-		inHomes.open("Residences.dat");
 		double countAddr = 0;
 		double countDis1 = 0;
 		double countDis2 = 0;
@@ -48,22 +47,20 @@ void processMaster(int rank, int numProcs, char* fName)
 
 			homes.push_back(coords);
 		}
+
 		inHomes.close();
 		
 
-		//calcDis(homes[0], foodBanks[0]);
-
 		// Get the shortest distance to a food bank for each home
-		for(int i = 0; i < homes.size(); i++) {
+		for(unsigned int i = 0; i < homes.size(); i++) {
 			double dis = 0;
 			double shortestDis = 1000;
-			for(int j = 0; j < foodBanks.size(); j++) {
+			for(unsigned int j = 0; j < foodBanks.size(); j++) {
 				dis = calcDis(homes[i], foodBanks[j]);
 			
 				if(dis < shortestDis)
 					shortestDis = dis;
 			}
-
 
 			if(shortestDis <= 1)
 				countDis1++;
@@ -74,6 +71,9 @@ void processMaster(int rank, int numProcs, char* fName)
 			else if(shortestDis > 5)
 				countDis4++;
 		}
+		
+		vector<int> counts;
+		//MPI_Gather(&counts,);
 
 		startTime = MPI_Wtime() - startTime;
 
@@ -86,29 +86,22 @@ void processMaster(int rank, int numProcs, char* fName)
 		cout << "1 - 2" << setw(40) << right << countDis2 << setw(28) << right << (countDis2/countAddr)*100 << endl;
 		cout << "2 - 5" << setw(40) << right << countDis3 << setw(28) << right << (countDis3/countAddr)*100 << endl;
 		cout << "  > 5" << setw(40) << right << countDis4 << setw(28) << right << (countDis4/countAddr)*100 << endl;
-	}
-	catch( exception ex )
-	{
+	} catch( exception ex ) {
 		cerr << ex.what() << endl;
 	}
 }
 
-void processSlave(int rank, int numProcs, char* fName) 
+void processSlave(int rank, int numProcs) 
 {
-	try
-	{
+	try {
 
-	}
-	catch( exception ex )
-	{
+	} catch( exception ex ) {
 		cerr << ex.what() << endl;
 	}
 }
 
 int main( int argc, char* argv[] ) 
 {
-	ifstream inFoodBanks;
-	inFoodBanks.open("FoodBanks.dat");
 	while(!inFoodBanks.eof()) {
 		string line;
 		string coord;
@@ -124,9 +117,10 @@ int main( int argc, char* argv[] )
 			count++;
 		}
 
-		_foodBanks.push_back(coords);
+		foodBanks.push_back(coords);
 	}
 	inFoodBanks.close();
+
 	if(MPI_Init(&argc, &argv) == MPI_SUCCESS) {
 		// Get the number of processes
 		int numProcs;
@@ -136,14 +130,12 @@ int main( int argc, char* argv[] )
 		int rank;
 		MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-		//processMaster(rank, numProcs);
 		try {
 			if( rank == 0 )
 				processMaster(rank, numProcs);
 			else
 				processSlave(rank, numProcs);
-		}
-		catch(exception ex) {
+		} catch(exception ex) {
 			cerr << ex.what() << endl;
 		}
 		
