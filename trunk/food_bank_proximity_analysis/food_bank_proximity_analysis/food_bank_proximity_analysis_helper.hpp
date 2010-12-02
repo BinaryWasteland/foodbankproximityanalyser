@@ -31,13 +31,12 @@ typedef struct {
 
 // Struct to hold variables
 struct coordinate {
-	long double x_;
-	long double y_;
+	double x_;
+	double y_;
 };
 
 // Take in vectors of coordinates
-long double calcDis(coordinate home, coordinate foodBank) {
-	double dis = (sqrt(pow(home.x_ - foodBank.x_, 2) + pow(home.y_ - foodBank.y_, 2))/1000);
+double calcDis(coordinate home, coordinate foodBank) {
 	return (sqrt(pow(home.x_ - foodBank.x_, 2) + pow(home.y_ - foodBank.y_, 2))/1000);
 }
 
