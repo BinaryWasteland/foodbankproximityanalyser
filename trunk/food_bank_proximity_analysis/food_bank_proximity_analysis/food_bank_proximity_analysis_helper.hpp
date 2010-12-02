@@ -24,6 +24,10 @@ stipulated in the agreement/contract under which
 the program(s) have been supplied.
 =============================================================*/
 
+typedef struct {
+	int countAddr, count1, count2, count3, count4;
+} counts;
+
 // Struct to hold variables
 struct coordinate {
 	long double x_;
