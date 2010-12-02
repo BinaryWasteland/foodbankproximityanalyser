@@ -5,6 +5,8 @@
 #include <sstream>
 #include <vector>
 #include <mpi.h>
+#include <math.h>
+#include <algorithm>
 #include "food_bank_proximity_analysis_helper.hpp"
 using namespace std;
 
