@@ -100,7 +100,7 @@ void processMaster(int rank, int numProcs) {
 		agg.countAddr = 0;
 
 		for(int i = 0; i < numProcs; ++i) {
-			cout << "Process #1 results for " << recv[i].countAddr << " addresses..." << endl;
+			cout << "Process " << i + 1 << " results for " << recv[i].countAddr << " addresses..." << endl;
 			cout << "Nearest Foodbank(km)" << setw(28) << "# of Addresses" << setw(28) << "% of Addresses" << endl;
 			cout << "--------------------" << setw(28) << "--------------" << setw(28) << "--------------" << endl;
 			cout << "0 - 1" << setw(40) << right << recv[i].count1 << setw(28) << right << recv[i].percentCount1 << endl;
