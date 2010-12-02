@@ -10,7 +10,6 @@ using namespace std;
 
 // Global constants
 const int MSG_TAG_DATA = 0, MSG_TAG_DONE = 1;
-const int HOMES_BYTES = 24;
 ifstream inHomes("Residences.dat");
 ifstream inFoodBanks("FoodBanks.dat");
 vector<coordinate> foodBanks;
