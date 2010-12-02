@@ -56,11 +56,13 @@ void readInFiles() {
 void processMaster(int rank, int numProcs) {
 	try	{
 		double startTime = MPI_Wtime();
-		double countAddr = 0;
-		double countDis1 = 0;
-		double countDis2 = 0;
-		double countDis3 = 0;
-		double countDis4 = 0;
+		counts count;
+		count.count1 = 0;
+		count.count2 = 0;
+		count.count3 = 0;
+		count.count4 = 0;
+		count.countAddr = 0;
+		vector<counts> recv;
 
 		cout << "Proximity of Residential Addresses to Foodbanks in Toronto" << endl;
 		cout << "----------------------------------------------------------" << endl << endl;
@@ -72,7 +74,7 @@ void processMaster(int rank, int numProcs) {
 			homesPerProcess += homes.size() % numProcs;
 
 		// Get the shortest distance to a food bank for each home
-		for(unsigned int i = (rank * homesPerProcess); i < ((rank + 1) * homesPerProcess); i++) {
+		for(int i = (rank * homesPerProcess); i < ((rank + 1) * homesPerProcess); i++) {
 			double dis = 0;
 			double shortestDis = 1000;
 			for(unsigned int j = 0; j < foodBanks.size(); j++) {
@@ -83,17 +85,27 @@ void processMaster(int rank, int numProcs) {
 			}
 
 			if(shortestDis <= 1)
-				countDis1++;
+				count.count1++;
 			else if(shortestDis <= 2)
-				countDis2++;
+				count.count2++;
 			else if(shortestDis <= 5)
-				countDis3++;
+				count.count3++;
 			else if(shortestDis > 5)
-				countDis4++;
+				count.count4++;
+			count.countAddr++;
 		}
+		
+		int blocklen[] = {5};
+		int indices[1];
+		indices[0] = 0;
+		MPI_Datatype oldtype[] = {MPI_INT};
+		MPI_Datatype newType;
+		MPI_Type_create_struct(1, blocklen, indices, oldtype, &newType);
+		MPI_Type_commit(&newType);
+		
+		MPI_Gather(&count, 1, newType, &recv, 1, newType, 0, MPI_COMM_WORLD);
 
-		vector<int> counts;
-		//MPI_Gather(&counts,);
+		MPI_Type_free(&newType);
 
 		startTime = MPI_Wtime() - startTime;
 
@@ -102,28 +114,26 @@ void processMaster(int rank, int numProcs) {
 		cout << "Process #1 results for " << homesPerProcess << " addresses..." << endl;
 		cout << "Nearest Foodbank(km)" << setw(28) << "# of Addresses" << setw(28) << "% of Addresses" << endl;
 		cout << "--------------------" << setw(28) << "--------------" << setw(28) << "--------------" << endl;
-		cout << "0 - 1" << setw(40) << right << countDis1 << setw(28) << right << (countDis1/homesPerProcess)*100 << endl;
-		cout << "1 - 2" << setw(40) << right << countDis2 << setw(28) << right << (countDis2/homesPerProcess)*100 << endl;
-		cout << "2 - 5" << setw(40) << right << countDis3 << setw(28) << right << (countDis3/homesPerProcess)*100 << endl;
-		cout << "  > 5" << setw(40) << right << countDis4 << setw(28) << right << (countDis4/homesPerProcess)*100 << endl;
+		cout << "0 - 1" << setw(40) << right << count.count1 << setw(28) << right << (count.count1/homesPerProcess)*100 << endl;
+		cout << "1 - 2" << setw(40) << right << count.count2 << setw(28) << right << (count.count2/homesPerProcess)*100 << endl;
+		cout << "2 - 5" << setw(40) << right << count.count3 << setw(28) << right << (count.count3/homesPerProcess)*100 << endl;
+		cout << "  > 5" << setw(40) << right << count.count4 << setw(28) << right << (count.count4/homesPerProcess)*100 << endl;
 	} catch( exception ex ) {
 		cerr << ex.what() << endl;
+	} catch(MPI::Exception ex) {
+		cerr << ex.Get_error_string() << endl;
 	}
 }
 
 void processSlave(int rank, int numProcs) {
 	try {
-		double countAddr = 0;
-		double countDis1 = 0;
-		double countDis2 = 0;
-		double countDis3 = 0;
-		double countDis4 = 0;
+		counts count;
 		int homesPerProcess = homes.size() / numProcs;
 		if( rank == numProcs - 1 )
 			homesPerProcess += homes.size() % numProcs;
 
 		// Get the shortest distance to a food bank for each home
-		for(unsigned int i = (rank * homesPerProcess); i < ((rank + 1) * homesPerProcess); i++) {
+		for(int i = (rank * homesPerProcess); i < ((rank + 1) * homesPerProcess); i++) {
 			double dis = 0;
 			double shortestDis = 1000;
 			for(unsigned int j = 0; j < foodBanks.size(); j++) {
@@ -134,13 +144,14 @@ void processSlave(int rank, int numProcs) {
 			}
 
 			if(shortestDis <= 1)
-				countDis1++;
+				count.count1++;
 			else if(shortestDis <= 2)
-				countDis2++;
+				count.count2++;
 			else if(shortestDis <= 5)
-				countDis3++;
+				count.count3++;
 			else if(shortestDis > 5)
-				countDis4++;
+				count.count4++;
+			count.countAddr++;
 		}
 	} catch( exception ex ) {
 		cerr << ex.what() << endl;
