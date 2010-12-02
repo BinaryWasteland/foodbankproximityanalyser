@@ -26,6 +26,7 @@ the program(s) have been supplied.
 
 typedef struct {
 	int countAddr, count1, count2, count3, count4;
+	double percentCount1, percentCount2, percentCount3, percentCount4, holder;
 } counts;
 
 // Struct to hold variables
@@ -36,7 +37,7 @@ struct coordinate {
 
 // Take in vectors of coordinates
 long double calcDis(coordinate home, coordinate foodBank) {
-	//double dis = (sqrt(pow(home.x_ - foodBank.x_, 2) + pow(home.y_ - foodBank.y_, 2))/1000);
+	double dis = (sqrt(pow(home.x_ - foodBank.x_, 2) + pow(home.y_ - foodBank.y_, 2))/1000);
 	return (sqrt(pow(home.x_ - foodBank.x_, 2) + pow(home.y_ - foodBank.y_, 2))/1000);
 }
 
